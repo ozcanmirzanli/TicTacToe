@@ -102,4 +102,9 @@ function checkForWin() {
   return null;
 }
 
+function resetGame() {
+  fields = [null, null, null, null, null, null, null, null, null];
+  render();
+}
+
 init();
