@@ -1,6 +1,8 @@
 let fields = [null, null, null, null, null, null, null, null, null];
-let lastClickedIndex = null; // To keep track of the last clicked cell
-let currentPlayer = "circle"; // Initialize currentPlayer
+
+let lastClickedIndex = null;
+
+let currentPlayer = "circle";
 
 function init() {
   render();
@@ -8,49 +10,55 @@ function init() {
 
 function render() {
   let content = document.getElementById("content");
+  // Initialize an empty string to build up the HTML content for the game board.
   let boardHtml = "";
+  // Check if there's a winning combination on the board.
+  const winningCombination = checkForWin();
 
   for (let i = 0; i < fields.length; i++) {
-    let cellValue = "";
+    let cellValue = ""; // Placeholder for the cell's SVG content (circle or cross).
+
     if (fields[i] === "circle") {
       cellValue = generateCircleSVG();
     } else if (fields[i] === "cross") {
       cellValue = generateCrossSVG();
     }
 
-    boardHtml += `<div class="cell" onclick="handleCellClick(${i})">${cellValue}</div>`;
+    // Default class for a cell. If the cell is part of the winning combination, add a "winning-cell" class.
+    let cellClass = "cell";
+    if (winningCombination && winningCombination.includes(i)) {
+      cellClass += " winning-cell";
+    }
+
+    boardHtml += `<div class="${cellClass}" onclick="handleCellClick(${i})">${cellValue}</div>`;
   }
 
   content.innerHTML = boardHtml;
-
-  // Apply animation only to the last clicked cell's SVG, if applicable
-  if (lastClickedIndex !== null) {
-    const lastCell = content.children[lastClickedIndex];
-    const svgElement = lastCell.querySelector("svg");
-    if (svgElement) {
-      const animationClass =
-        fields[lastClickedIndex] === "circle"
-          ? "circle-animation"
-          : "path-animation";
-      svgElement
-        .querySelector(
-          fields[lastClickedIndex] === "circle" ? "circle" : "path"
-        )
-        .classList.add(animationClass);
-    }
-  }
 }
 
 function handleCellClick(index) {
-  if (fields[index] === null) {
-    fields[index] = currentPlayer; // Mark the cell with the current player's symbol
-    lastClickedIndex = index; // Update lastClickedIndex with the current clicked cell's index
-    render(); // Re-render to show the updated board
+  if (checkForWin()) {
+    alert("Game over. Please reset the game to start over.");
+    return;
+  }
 
-    // Switch players
+  // If the clicked cell is empty, mark it with the current player's symbol.
+  if (fields[index] === null) {
+    fields[index] = currentPlayer; // Mark the cell.
+    lastClickedIndex = index; // Update the last clicked index.
+
+    // After marking the cell, check if this move wins the game.
+    const winningCombination = checkForWin();
+    if (winningCombination) {
+      alert(`${currentPlayer.toUpperCase()} wins!`);
+    }
+
+    // Switch to the other player.
     currentPlayer = currentPlayer === "circle" ? "cross" : "circle";
+
+    render();
   } else {
-    currentPlayer.onclick = null;
+    alert("This cell is already taken!");
   }
 }
 
@@ -71,5 +79,27 @@ function generateCrossSVG() {
   `;
 }
 
-// Don't forget to call init() to start the game
+function checkForWin() {
+  // Define all possible winning combinations.
+  const winConditions = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8], // Rows
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8], // Columns
+    [0, 4, 8],
+    [2, 4, 6], // Diagonals
+  ];
+
+  for (let condition of winConditions) {
+    const [a, b, c] = condition;
+    // If the three cells in a condition are filled with the same player's symbol, return the winning condition.
+    if (fields[a] && fields[a] === fields[b] && fields[a] === fields[c]) {
+      return condition;
+    }
+  }
+  return null;
+}
+
 init();
