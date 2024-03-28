@@ -50,7 +50,7 @@ function handleCellClick(index) {
     // Switch players
     currentPlayer = currentPlayer === "circle" ? "cross" : "circle";
   } else {
-    alert("This cell is already taken!");
+    currentPlayer.onclick = null;
   }
 }
 
